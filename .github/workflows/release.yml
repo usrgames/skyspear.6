@@ -1,0 +1,32 @@
+name: release
+
+# skyspear's releases are published here. Its source is private: usrgames/skyspear builds each
+# release on a tag v* and hands it over, unsigned, as a draft on a tag of the same name, then
+# starts this workflow, which holds the draft to its manifest, waits in the release environment
+# for a person to approve, signs, tries the result on three kinds of machine, and publishes it.
+# Run by hand on a release's tag with again ticked, it signs that release again, as a renewal
+# asks. RELEASES.md in usrgames/.github says how.
+on:
+  workflow_dispatch:
+    inputs:
+      again:
+        description: "Run on a tag: sign that release again, under the current certificate."
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    uses: usrgames/.github/.github/workflows/publish.yml@8383ba303422fc225d9b0481f80e104ab32b718e
+    # The half reads the draft and publishes the release.
+    permissions:
+      contents: write
+    with:
+      name: skyspear
+      man: man/skyspear.6
+      draft: ${{ !inputs.again }}
+      again: ${{ inputs.again }}
+    secrets:
+      RELEASE_KEY: ${{ secrets.RELEASE_KEY }}
